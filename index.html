@@ -1,0 +1,496 @@
+import React, { useState } from 'react';
+import { ChevronRight, DollarSign, TrendingUp, Shield, Users, Target, Award } from 'lucide-react';
+
+const FinancialWellnessAssessment = () => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [responses, setResponses] = useState({});
+  const [showResults, setShowResults] = useState(false);
+
+  const questions = [
+    {
+      category: 'Income & Employment',
+      icon: <DollarSign className="w-6 h-6" />,
+      questions: [
+        {
+          id: 'employment_status',
+          text: 'What best describes your current employment situation?',
+          type: 'select',
+          options: [
+            { value: 'full_time', label: 'Full-time employed', weight: 4 },
+            { value: 'part_time', label: 'Part-time employed', weight: 3 },
+            { value: 'self_employed', label: 'Self-employed/Business owner', weight: 3 },
+            { value: 'contract', label: 'Contract/Freelance work', weight: 2 },
+            { value: 'unemployed', label: 'Currently unemployed', weight: 1 },
+            { value: 'student', label: 'Student', weight: 2 }
+          ]
+        },
+        {
+          id: 'income_stability',
+          text: 'How stable is your monthly income?',
+          type: 'select',
+          options: [
+            { value: 'very_stable', label: 'Very stable - same amount each month', weight: 4 },
+            { value: 'mostly_stable', label: 'Mostly stable with minor variations', weight: 3 },
+            { value: 'somewhat_variable', label: 'Somewhat variable but predictable', weight: 2 },
+            { value: 'highly_variable', label: 'Highly variable and unpredictable', weight: 1 }
+          ]
+        },
+        {
+          id: 'income_growth',
+          text: 'Has your income increased in the past 2 years?',
+          type: 'select',
+          options: [
+            { value: 'significant_increase', label: 'Yes, significantly (15%+ increase)', weight: 4 },
+            { value: 'moderate_increase', label: 'Yes, moderately (5-15% increase)', weight: 3 },
+            { value: 'slight_increase', label: 'Yes, slightly (1-5% increase)', weight: 2 },
+            { value: 'no_change', label: 'Stayed about the same', weight: 1 },
+            { value: 'decreased', label: 'Decreased', weight: 0 }
+          ]
+        }
+      ]
+    },
+    {
+      category: 'Budgeting & Spending',
+      icon: <Target className="w-6 h-6" />,
+      questions: [
+        {
+          id: 'budget_tracking',
+          text: 'How do you track your monthly expenses?',
+          type: 'select',
+          options: [
+            { value: 'detailed_tracking', label: 'I track every expense in detail', weight: 4 },
+            { value: 'basic_tracking', label: 'I track major expenses and categories', weight: 3 },
+            { value: 'occasional_tracking', label: 'I check occasionally but not consistently', weight: 2 },
+            { value: 'no_tracking', label: 'I don\'t track my expenses', weight: 1 }
+          ]
+        },
+        {
+          id: 'spending_control',
+          text: 'How often do you stick to your planned spending?',
+          type: 'select',
+          options: [
+            { value: 'always', label: 'Always - I rarely overspend', weight: 4 },
+            { value: 'usually', label: 'Usually - occasional overspending', weight: 3 },
+            { value: 'sometimes', label: 'Sometimes - I struggle with impulse purchases', weight: 2 },
+            { value: 'rarely', label: 'Rarely - I often overspend', weight: 1 }
+          ]
+        },
+        {
+          id: 'essential_vs_discretionary',
+          text: 'What percentage of your income goes to essential expenses (housing, food, transportation)?',
+          type: 'select',
+          options: [
+            { value: 'under_50', label: 'Less than 50%', weight: 4 },
+            { value: '50_to_70', label: '50-70%', weight: 3 },
+            { value: '70_to_85', label: '70-85%', weight: 2 },
+            { value: 'over_85', label: 'More than 85%', weight: 1 }
+          ]
+        }
+      ]
+    },
+    {
+      category: 'Emergency Fund & Savings',
+      icon: <Shield className="w-6 h-6" />,
+      questions: [
+        {
+          id: 'emergency_fund',
+          text: 'How many months of expenses could you cover with your emergency savings?',
+          type: 'select',
+          options: [
+            { value: 'six_plus', label: '6+ months', weight: 4 },
+            { value: 'three_to_six', label: '3-6 months', weight: 3 },
+            { value: 'one_to_three', label: '1-3 months', weight: 2 },
+            { value: 'less_than_one', label: 'Less than 1 month', weight: 1 },
+            { value: 'none', label: 'No emergency fund', weight: 0 }
+          ]
+        },
+        {
+          id: 'savings_rate',
+          text: 'What percentage of your income do you typically save each month?',
+          type: 'select',
+          options: [
+            { value: 'twenty_plus', label: '20% or more', weight: 4 },
+            { value: 'ten_to_twenty', label: '10-20%', weight: 3 },
+            { value: 'five_to_ten', label: '5-10%', weight: 2 },
+            { value: 'less_than_five', label: 'Less than 5%', weight: 1 },
+            { value: 'unable_to_save', label: 'Unable to save consistently', weight: 0 }
+          ]
+        }
+      ]
+    },
+    {
+      category: 'Debt Management',
+      icon: <TrendingUp className="w-6 h-6" />,
+      questions: [
+        {
+          id: 'debt_situation',
+          text: 'What is your current debt situation?',
+          type: 'select',
+          options: [
+            { value: 'no_debt', label: 'No debt (except mortgage)', weight: 4 },
+            { value: 'manageable_debt', label: 'Some debt but manageable payments', weight: 3 },
+            { value: 'moderate_debt', label: 'Moderate debt causing some stress', weight: 2 },
+            { value: 'high_debt', label: 'High debt causing significant stress', weight: 1 },
+            { value: 'overwhelming_debt', label: 'Overwhelming debt, struggling to keep up', weight: 0 }
+          ]
+        },
+        {
+          id: 'debt_payments',
+          text: 'What percentage of your income goes to debt payments (excluding mortgage)?',
+          type: 'select',
+          options: [
+            { value: 'none', label: '0%', weight: 4 },
+            { value: 'low', label: '1-10%', weight: 3 },
+            { value: 'moderate', label: '11-20%', weight: 2 },
+            { value: 'high', label: '21-35%', weight: 1 },
+            { value: 'very_high', label: 'More than 35%', weight: 0 }
+          ]
+        }
+      ]
+    },
+    {
+      category: 'Investment & Retirement',
+      icon: <TrendingUp className="w-6 h-6" />,
+      questions: [
+        {
+          id: 'retirement_savings',
+          text: 'Do you contribute to retirement savings (401k, IRA, etc.)?',
+          type: 'select',
+          options: [
+            { value: 'maxing_out', label: 'Yes, maximizing contributions', weight: 4 },
+            { value: 'good_amount', label: 'Yes, contributing a good amount (10%+)', weight: 3 },
+            { value: 'some_contribution', label: 'Yes, but minimal contributions', weight: 2 },
+            { value: 'no_contribution', label: 'No, not contributing currently', weight: 1 }
+          ]
+        },
+        {
+          id: 'investment_knowledge',
+          text: 'How would you rate your investment knowledge?',
+          type: 'select',
+          options: [
+            { value: 'advanced', label: 'Advanced - I actively manage investments', weight: 4 },
+            { value: 'intermediate', label: 'Intermediate - I understand basics and invest regularly', weight: 3 },
+            { value: 'beginner', label: 'Beginner - I know some basics but limited experience', weight: 2 },
+            { value: 'minimal', label: 'Minimal - I don\'t understand investing much', weight: 1 }
+          ]
+        }
+      ]
+    },
+    {
+      category: 'Financial Support & Community',
+      icon: <Users className="w-6 h-6" />,
+      questions: [
+        {
+          id: 'family_support',
+          text: 'Do you provide financial support to family members?',
+          type: 'select',
+          options: [
+            { value: 'none', label: 'No financial support to others', weight: 4 },
+            { value: 'minimal', label: 'Minimal support that doesn\'t impact my finances', weight: 3 },
+            { value: 'moderate', label: 'Moderate support that impacts but doesn\'t strain finances', weight: 2 },
+            { value: 'significant', label: 'Significant support that strains my finances', weight: 1 }
+          ]
+        },
+        {
+          id: 'financial_education',
+          text: 'How do you stay informed about financial matters?',
+          type: 'select',
+          options: [
+            { value: 'very_active', label: 'Very active - books, courses, advisors', weight: 4 },
+            { value: 'somewhat_active', label: 'Somewhat active - articles, podcasts', weight: 3 },
+            { value: 'occasional', label: 'Occasional research when needed', weight: 2 },
+            { value: 'minimal', label: 'Minimal financial education', weight: 1 }
+          ]
+        }
+      ]
+    }
+  ];
+
+  const calculateScore = () => {
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+    
+    questions.forEach(category => {
+      category.questions.forEach(question => {
+        const response = responses[question.id];
+        if (response) {
+          totalScore += response.weight;
+        }
+        maxPossibleScore += 4;
+      });
+    });
+    
+    return Math.round((totalScore / maxPossibleScore) * 100);
+  };
+
+  const getScoreCategory = (score) => {
+    if (score >= 85) return { level: 'Excellent', color: 'text-green-600', bgColor: 'bg-green-100' };
+    if (score >= 70) return { level: 'Good', color: 'text-blue-600', bgColor: 'bg-blue-100' };
+    if (score >= 55) return { level: 'Fair', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
+    if (score >= 40) return { level: 'Needs Improvement', color: 'text-orange-600', bgColor: 'bg-orange-100' };
+    return { level: 'Critical', color: 'text-red-600', bgColor: 'bg-red-100' };
+  };
+
+  const getRecommendations = (score) => {
+    const recommendations = [];
+    
+    // Analyze each category
+    questions.forEach(category => {
+      let categoryScore = 0;
+      let categoryMax = 0;
+      
+      category.questions.forEach(question => {
+        const response = responses[question.id];
+        if (response) {
+          categoryScore += response.weight;
+        }
+        categoryMax += 4;
+      });
+      
+      const categoryPercentage = (categoryScore / categoryMax) * 100;
+      
+      if (categoryPercentage < 60) {
+        switch (category.category) {
+          case 'Income & Employment':
+            recommendations.push({
+              category: 'Income Growth',
+              priority: 'High',
+              action: 'Focus on skill development and career advancement. Consider side hustles or additional income streams.',
+              resources: 'Look into professional development courses, networking events, or freelance opportunities in your field.'
+            });
+            break;
+          case 'Budgeting & Spending':
+            recommendations.push({
+              category: 'Budget Control',
+              priority: 'High',
+              action: 'Start tracking all expenses and create a realistic monthly budget.',
+              resources: 'Use budgeting apps like Mint or YNAB, or try the envelope method for cash spending.'
+            });
+            break;
+          case 'Emergency Fund & Savings':
+            recommendations.push({
+              category: 'Emergency Preparedness',
+              priority: 'Critical',
+              action: 'Build an emergency fund starting with $500, then work toward 3-6 months of expenses.',
+              resources: 'Set up automatic transfers to a high-yield savings account, even if just $25/month initially.'
+            });
+            break;
+          case 'Debt Management':
+            recommendations.push({
+              category: 'Debt Reduction',
+              priority: 'High',
+              action: 'Create a debt payoff plan using either debt snowball or avalanche method.',
+              resources: 'Consider debt consolidation or speaking with a nonprofit credit counselor for guidance.'
+            });
+            break;
+          case 'Investment & Retirement':
+            recommendations.push({
+              category: 'Future Planning',
+              priority: 'Medium',
+              action: 'Start with employer 401(k) match, then open an IRA. Begin with low-cost index funds.',
+              resources: 'Take advantage of free financial literacy resources and consider robo-advisors for beginners.'
+            });
+            break;
+          case 'Financial Support & Community':
+            recommendations.push({
+              category: 'Financial Boundaries',
+              priority: 'Medium',
+              action: 'Set clear boundaries around family financial support and prioritize your own financial health.',
+              resources: 'Seek financial education resources specifically for women of color to address unique challenges.'
+            });
+            break;
+        }
+      }
+    });
+    
+    return recommendations;
+  };
+
+  const handleAnswer = (questionId, answer) => {
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
+  const nextStep = () => {
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      setShowResults(true);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const currentCategory = questions[currentStep];
+  const score = calculateScore();
+  const scoreCategory = getScoreCategory(score);
+  const recommendations = getRecommendations(score);
+
+  if (showResults) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 bg-white">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center space-x-2 mb-4">
+            <Award className="w-8 h-8 text-purple-600" />
+            <h1 className="text-2xl font-bold text-gray-800">Use Money Well LLC</h1>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-700">Your Financial Wellness Score</h2>
+        </div>
+
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-8 mb-8">
+          <div className="text-center">
+            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${scoreCategory.bgColor} mb-4`}>
+              <span className={`text-3xl font-bold ${scoreCategory.color}`}>{score}</span>
+            </div>
+            <h3 className={`text-2xl font-semibold ${scoreCategory.color} mb-2`}>{scoreCategory.level}</h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              {score >= 85 && "Excellent work! You're demonstrating strong financial wellness across multiple areas. Keep building on these solid foundations."}
+              {score >= 70 && score < 85 && "You're doing well with your finances! There are some areas where focused improvement can help you reach the next level."}
+              {score >= 55 && score < 70 && "You have some good financial habits, but there are important areas that need attention to improve your overall financial wellness."}
+              {score >= 40 && score < 55 && "Your financial wellness needs improvement in several key areas. With focused effort, you can make significant progress."}
+              {score < 40 && "Your financial situation needs immediate attention. Don't be discouraged - every small step forward is progress, and there are resources to help you improve."}
+            </p>
+          </div>
+        </div>
+
+        {recommendations.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Personalized Action Plan</h3>
+            <div className="space-y-4">
+              {recommendations.map((rec, index) => (
+                <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                  <div className="flex items-start space-x-4">
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      rec.priority === 'Critical' ? 'bg-red-100 text-red-800' :
+                      rec.priority === 'High' ? 'bg-orange-100 text-orange-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {rec.priority} Priority
+                    </div>
+                  </div>
+                  <h4 className="font-semibold text-gray-800 mt-3 mb-2">{rec.category}</h4>
+                  <p className="text-gray-600 mb-3">{rec.action}</p>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-700"><strong>Next Steps:</strong> {rec.resources}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-purple-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-purple-800 mb-3">Remember</h3>
+          <p className="text-purple-700 mb-3">
+            Financial wellness is a journey, not a destination. As a woman of color, you may face unique challenges including wage gaps, 
+            family obligations, and systemic barriers. Your score reflects where you are today, and every step forward is meaningful progress.
+          </p>
+          <p className="text-purple-700">
+            Consider working with a financial advisor who understands your unique circumstances and can help you create a personalized 
+            strategy for building wealth and achieving your financial goals.
+          </p>
+        </div>
+
+        <div className="text-center mt-8">
+          <button 
+            onClick={() => {
+              setShowResults(false);
+              setCurrentStep(0);
+              setResponses({});
+            }}
+            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Take Assessment Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto p-6 bg-white">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center space-x-2 mb-4">
+          <Award className="w-8 h-8 text-purple-600" />
+          <h1 className="text-2xl font-bold text-gray-800">Use Money Well LLC</h1>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-700">Financial Wellness Assessment</h2>
+        <p className="text-gray-600 mt-2">Get a comprehensive view of your financial health and personalized recommendations</p>
+      </div>
+
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm font-medium text-gray-600">
+            Step {currentStep + 1} of {questions.length}
+          </span>
+          <span className="text-sm text-gray-500">
+            {Math.round(((currentStep + 1) / questions.length) * 100)}% Complete
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-8 mb-6">
+        <div className="flex items-center space-x-3 mb-6">
+          {currentCategory.icon}
+          <h3 className="text-xl font-semibold text-gray-800">{currentCategory.category}</h3>
+        </div>
+
+        <div className="space-y-6">
+          {currentCategory.questions.map((question, index) => (
+            <div key={question.id} className="bg-white rounded-lg p-6 shadow-sm">
+              <h4 className="font-medium text-gray-800 mb-4">{question.text}</h4>
+              <div className="space-y-2">
+                {question.options.map((option) => (
+                  <label key={option.value} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                    <input
+                      type="radio"
+                      name={question.id}
+                      value={option.value}
+                      checked={responses[question.id]?.value === option.value}
+                      onChange={() => handleAnswer(question.id, option)}
+                      className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                    />
+                    <span className="text-gray-700">{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-between">
+        <button
+          onClick={prevStep}
+          disabled={currentStep === 0}
+          className="px-6 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          Previous
+        </button>
+        
+        <button
+          onClick={nextStep}
+          disabled={currentCategory.questions.some(q => !responses[q.id])}
+          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+        >
+          <span>{currentStep === questions.length - 1 ? 'Get My Score' : 'Next'}</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default FinancialWellnessAssessment;

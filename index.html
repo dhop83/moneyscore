@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, DollarSign, TrendingUp, Shield, Users, Target, Award } from 'lucide-react';
+import { ChevronRight, ChevronLeft, DollarSign, TrendingUp, Shield, Users, Target, Award, Home } from 'lucide-react';
 
 const FinancialWellnessAssessment = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -149,7 +149,7 @@ const FinancialWellnessAssessment = () => {
       ]
     },
     {
-      category: 'Investment & Retirement',
+      category: 'Investment & Future Planning',
       icon: <TrendingUp className="w-6 h-6" />,
       questions: [
         {
@@ -220,21 +220,20 @@ const FinancialWellnessAssessment = () => {
       });
     });
     
-    return Math.round((totalScore / maxPossibleScore) * 100);
+    return maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
   };
 
   const getScoreCategory = (score) => {
-    if (score >= 85) return { level: 'Excellent', color: 'text-green-600', bgColor: 'bg-green-100' };
-    if (score >= 70) return { level: 'Good', color: 'text-blue-600', bgColor: 'bg-blue-100' };
-    if (score >= 55) return { level: 'Fair', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
-    if (score >= 40) return { level: 'Needs Improvement', color: 'text-orange-600', bgColor: 'bg-orange-100' };
-    return { level: 'Critical', color: 'text-red-600', bgColor: 'bg-red-100' };
+    if (score >= 85) return { level: 'Excellent', color: 'text-green-600', bgColor: 'bg-green-100', borderColor: 'border-green-200' };
+    if (score >= 70) return { level: 'Good', color: 'text-blue-600', bgColor: 'bg-blue-100', borderColor: 'border-blue-200' };
+    if (score >= 55) return { level: 'Fair', color: 'text-yellow-600', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-200' };
+    if (score >= 40) return { level: 'Needs Improvement', color: 'text-orange-600', bgColor: 'bg-orange-100', borderColor: 'border-orange-200' };
+    return { level: 'Critical', color: 'text-red-600', bgColor: 'bg-red-100', borderColor: 'border-red-200' };
   };
 
   const getRecommendations = (score) => {
     const recommendations = [];
     
-    // Analyze each category
     questions.forEach(category => {
       let categoryScore = 0;
       let categoryMax = 0;
@@ -247,7 +246,7 @@ const FinancialWellnessAssessment = () => {
         categoryMax += 4;
       });
       
-      const categoryPercentage = (categoryScore / categoryMax) * 100;
+      const categoryPercentage = categoryMax > 0 ? (categoryScore / categoryMax) * 100 : 0;
       
       if (categoryPercentage < 60) {
         switch (category.category) {
@@ -283,7 +282,7 @@ const FinancialWellnessAssessment = () => {
               resources: 'Consider debt consolidation or speaking with a nonprofit credit counselor for guidance.'
             });
             break;
-          case 'Investment & Retirement':
+          case 'Investment & Future Planning':
             recommendations.push({
               category: 'Future Planning',
               priority: 'Medium',
@@ -327,167 +326,244 @@ const FinancialWellnessAssessment = () => {
     }
   };
 
-  const currentCategory = questions[currentStep];
-  const score = calculateScore();
-  const scoreCategory = getScoreCategory(score);
-  const recommendations = getRecommendations(score);
+  const isStepComplete = () => {
+    return questions[currentStep].questions.every(q => responses[q.id]);
+  };
+
+  const resetAssessment = () => {
+    setShowResults(false);
+    setCurrentStep(0);
+    setResponses({});
+  };
 
   if (showResults) {
+    const score = calculateScore();
+    const scoreCategory = getScoreCategory(score);
+    const recommendations = getRecommendations(score);
+
     return (
-      <div className="max-w-4xl mx-auto p-6 bg-white">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 mb-4">
-            <Award className="w-8 h-8 text-purple-600" />
-            <h1 className="text-2xl font-bold text-gray-800">Use Money Well LLC</h1>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-700">Your Financial Wellness Score</h2>
-        </div>
-
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-8 mb-8">
-          <div className="text-center">
-            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${scoreCategory.bgColor} mb-4`}>
-              <span className={`text-3xl font-bold ${scoreCategory.color}`}>{score}</span>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+        <div className="max-w-4xl mx-auto p-6">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center space-x-3 mb-4 bg-white rounded-full px-6 py-3 shadow-lg">
+              <Award className="w-8 h-8 text-purple-600" />
+              <h1 className="text-2xl font-bold text-gray-800">Use Money Well LLC</h1>
             </div>
-            <h3 className={`text-2xl font-semibold ${scoreCategory.color} mb-2`}>{scoreCategory.level}</h3>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              {score >= 85 && "Excellent work! You're demonstrating strong financial wellness across multiple areas. Keep building on these solid foundations."}
-              {score >= 70 && score < 85 && "You're doing well with your finances! There are some areas where focused improvement can help you reach the next level."}
-              {score >= 55 && score < 70 && "You have some good financial habits, but there are important areas that need attention to improve your overall financial wellness."}
-              {score >= 40 && score < 55 && "Your financial wellness needs improvement in several key areas. With focused effort, you can make significant progress."}
-              {score < 40 && "Your financial situation needs immediate attention. Don't be discouraged - every small step forward is progress, and there are resources to help you improve."}
-            </p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Financial Wellness Score</h2>
+            <p className="text-gray-600">Comprehensive assessment results and personalized recommendations</p>
           </div>
-        </div>
 
-        {recommendations.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Personalized Action Plan</h3>
-            <div className="space-y-4">
-              {recommendations.map((rec, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="flex items-start space-x-4">
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      rec.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                      rec.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {rec.priority} Priority
+          {/* Score Display */}
+          <div className={`bg-white rounded-2xl p-8 mb-8 shadow-xl border-2 ${scoreCategory.borderColor}`}>
+            <div className="text-center">
+              <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full ${scoreCategory.bgColor} mb-6 border-4 ${scoreCategory.borderColor}`}>
+                <span className={`text-4xl font-bold ${scoreCategory.color}`}>{score}</span>
+              </div>
+              <h3 className={`text-3xl font-bold ${scoreCategory.color} mb-4`}>{scoreCategory.level}</h3>
+              <div className="max-w-2xl mx-auto">
+                {score >= 85 && (
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    Outstanding work! You're demonstrating excellent financial wellness across multiple areas. 
+                    Your strong financial foundation positions you well for continued wealth building and achieving your long-term goals.
+                  </p>
+                )}
+                {score >= 70 && score < 85 && (
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    You're doing well with your finances and have established good habits! 
+                    With some focused improvements in key areas, you can reach excellent financial wellness.
+                  </p>
+                )}
+                {score >= 55 && score < 70 && (
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    You have some solid financial foundations, but there are important areas that need attention. 
+                    With dedicated effort, you can significantly improve your overall financial wellness.
+                  </p>
+                )}
+                {score >= 40 && score < 55 && (
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    Your financial wellness needs improvement in several key areas. 
+                    Don't be discouraged - with focused action and the right strategies, you can make meaningful progress.
+                  </p>
+                )}
+                {score < 40 && (
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    Your financial situation requires immediate attention, but every journey begins with a single step. 
+                    The recommendations below will help you start building a stronger financial foundation.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          {recommendations.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Your Personalized Action Plan</h3>
+              <div className="grid gap-6">
+                {recommendations.map((rec, index) => (
+                  <div key={index} className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-xl font-semibold text-gray-800">{rec.category}</h4>
+                      <div className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                        rec.priority === 'Critical' ? 'bg-red-100 text-red-800' :
+                        rec.priority === 'High' ? 'bg-orange-100 text-orange-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {rec.priority} Priority
+                      </div>
+                    </div>
+                    <p className="text-gray-700 mb-4 text-lg">{rec.action}</p>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold text-gray-800">Next Steps:</span> {rec.resources}
+                      </p>
                     </div>
                   </div>
-                  <h4 className="font-semibold text-gray-800 mt-3 mb-2">{rec.category}</h4>
-                  <p className="text-gray-600 mb-3">{rec.action}</p>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-700"><strong>Next Steps:</strong> {rec.resources}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Encouraging Message */}
+          <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-8 mb-8 border border-purple-200">
+            <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
+              <Users className="w-6 h-6 mr-2" />
+              Remember: You're Not Alone in This Journey
+            </h3>
+            <div className="space-y-3 text-purple-700">
+              <p>
+                Financial wellness is a journey, not a destination. As a woman of color, you may face unique challenges 
+                including wage gaps, family obligations, and systemic barriers that can impact your financial progress.
+              </p>
+              <p>
+                Your score reflects where you are today, and every step forward - no matter how small - is meaningful progress. 
+                Consider working with a financial advisor who understands your unique circumstances and can help create a 
+                personalized strategy for building wealth.
+              </p>
+              <p className="font-semibold">
+                Your financial success is not just about you - it's about breaking cycles and creating generational wealth 
+                for your family and community.
+              </p>
             </div>
           </div>
-        )}
 
-        <div className="bg-purple-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-purple-800 mb-3">Remember</h3>
-          <p className="text-purple-700 mb-3">
-            Financial wellness is a journey, not a destination. As a woman of color, you may face unique challenges including wage gaps, 
-            family obligations, and systemic barriers. Your score reflects where you are today, and every step forward is meaningful progress.
-          </p>
-          <p className="text-purple-700">
-            Consider working with a financial advisor who understands your unique circumstances and can help you create a personalized 
-            strategy for building wealth and achieving your financial goals.
-          </p>
-        </div>
-
-        <div className="text-center mt-8">
-          <button 
-            onClick={() => {
-              setShowResults(false);
-              setCurrentStep(0);
-              setResponses({});
-            }}
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            Take Assessment Again
-          </button>
+          {/* Action Buttons */}
+          <div className="text-center space-y-4">
+            <button 
+              onClick={resetAssessment}
+              className="bg-purple-600 text-white px-8 py-4 rounded-xl hover:bg-purple-700 transition-colors font-semibold text-lg shadow-lg"
+            >
+              Take Assessment Again
+            </button>
+            <p className="text-gray-600">
+              Share this assessment with friends and family to help them on their financial wellness journey too!
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  const currentCategory = questions[currentStep];
+
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center space-x-2 mb-4">
-          <Award className="w-8 h-8 text-purple-600" />
-          <h1 className="text-2xl font-bold text-gray-800">Use Money Well LLC</h1>
-        </div>
-        <h2 className="text-xl font-semibold text-gray-700">Financial Wellness Assessment</h2>
-        <p className="text-gray-600 mt-2">Get a comprehensive view of your financial health and personalized recommendations</p>
-      </div>
-
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-medium text-gray-600">
-            Step {currentStep + 1} of {questions.length}
-          </span>
-          <span className="text-sm text-gray-500">
-            {Math.round(((currentStep + 1) / questions.length) * 100)}% Complete
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-8 mb-6">
-        <div className="flex items-center space-x-3 mb-6">
-          {currentCategory.icon}
-          <h3 className="text-xl font-semibold text-gray-800">{currentCategory.category}</h3>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+      <div className="max-w-4xl mx-auto p-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center space-x-3 mb-4 bg-white rounded-full px-6 py-3 shadow-lg">
+            <Award className="w-8 h-8 text-purple-600" />
+            <h1 className="text-2xl font-bold text-gray-800">Use Money Well LLC</h1>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Financial Wellness Assessment</h2>
+          <p className="text-gray-600 text-lg">Get a comprehensive view of your financial health with personalized recommendations</p>
         </div>
 
-        <div className="space-y-6">
-          {currentCategory.questions.map((question, index) => (
-            <div key={question.id} className="bg-white rounded-lg p-6 shadow-sm">
-              <h4 className="font-medium text-gray-800 mb-4">{question.text}</h4>
-              <div className="space-y-2">
-                {question.options.map((option) => (
-                  <label key={option.value} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                    <input
-                      type="radio"
-                      name={question.id}
-                      value={option.value}
-                      checked={responses[question.id]?.value === option.value}
-                      onChange={() => handleAnswer(question.id, option)}
-                      className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
-                    />
-                    <span className="text-gray-700">{option.label}</span>
-                  </label>
-                ))}
+        {/* Progress Bar */}
+        <div className="bg-white rounded-xl p-6 mb-8 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-lg font-semibold text-gray-700">
+              Step {currentStep + 1} of {questions.length}
+            </span>
+            <span className="text-gray-600">
+              {Math.round(((currentStep + 1) / questions.length) * 100)}% Complete
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Question Section */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white bg-opacity-20 rounded-lg p-3">
+                {currentCategory.icon}
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold">{currentCategory.category}</h3>
+                <p className="text-purple-100">Answer all questions in this section to continue</p>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      <div className="flex justify-between">
-        <button
-          onClick={prevStep}
-          disabled={currentStep === 0}
-          className="px-6 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Previous
-        </button>
-        
-        <button
-          onClick={nextStep}
-          disabled={currentCategory.questions.some(q => !responses[q.id])}
-          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-        >
-          <span>{currentStep === questions.length - 1 ? 'Get My Score' : 'Next'}</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
+          <div className="p-8">
+            <div className="space-y-8">
+              {currentCategory.questions.map((question, index) => (
+                <div key={question.id} className="bg-gray-50 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-6">{question.text}</h4>
+                  <div className="space-y-3">
+                    {question.options.map((option) => (
+                      <label key={option.value} className="flex items-center space-x-4 cursor-pointer hover:bg-white p-3 rounded-lg transition-colors group">
+                        <input
+                          type="radio"
+                          name={question.id}
+                          value={option.value}
+                          checked={responses[question.id]?.value === option.value}
+                          onChange={() => handleAnswer(question.id, option)}
+                          className="w-5 h-5 text-purple-600 border-2 border-gray-300 focus:ring-purple-500 focus:ring-2"
+                        />
+                        <span className="text-gray-700 group-hover:text-gray-900 flex-1">{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between items-center">
+          <button
+            onClick={prevStep}
+            disabled={currentStep === 0}
+            className="flex items-center space-x-2 px-6 py-3 text-gray-600 border-2 border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            <span>Previous</span>
+          </button>
+          
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-2">
+              {currentCategory.questions.filter(q => responses[q.id]).length} of {currentCategory.questions.length} questions answered
+            </p>
+          </div>
+          
+          <button
+            onClick={nextStep}
+            disabled={!isStepComplete()}
+            className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+          >
+            <span>{currentStep === questions.length - 1 ? 'Get My Score' : 'Next'}</span>
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   );
